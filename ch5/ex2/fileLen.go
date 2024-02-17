@@ -1,41 +1,42 @@
 package main
 
 import (
-	"fmt"
-	"io"
-	"os"
+    "errors"
+    "fmt"
+    "io"
+    "os"
 )
 
 func main() {
-	fname := os.Args[1]
-	length, err := fileLen(fname)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	fmt.Printf("Length of %s: %d", fname, length)
+    fileName := os.Args[1]
+    length, err := fileLen(fileName)
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    fmt.Printf("Length of %s: %d", fileName, length)
 }
 
-func fileLen(fname string) (int, error) {
-	f, err := os.Open(fname)
-	if err != nil {
-		return 0, err
-	}
-	defer f.Close()
-	buf := make([]byte, 1024)
-	var (
-		bytes int
-		b     int
-	)
-	for {
-		b, err = f.Read(buf)
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return 0, err
-		}
-		bytes += b
-	}
-	return bytes, nil
+func fileLen(fileName string) (int, error) {
+    file, err := os.Open(fileName)
+    if err != nil {
+        return 0, err
+    }
+    defer file.Close()
+    buf := make([]byte, 1024)
+    var (
+        bytes int
+        b     int
+    )
+    for {
+        b, err = file.Read(buf)
+        bytes += b
+        if err != nil {
+            if errors.Is(err, io.EOF) {
+                break
+            }
+            return 0, err
+        }
+    }
+    return bytes, nil
 }
